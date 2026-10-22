@@ -1,53 +1,98 @@
-
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MyGelary - Photo Gallery</title>
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f7f5;
-      color: #183b2b;
-    }
-    header {
-      background: #08783e;
-      color: white;
-      padding: 22px 15px;
-      text-align: center;
-    }
-    main {
-      max-width: 800px;
-      margin: 25px auto;
-      padding: 15px;
-      text-align: center;
-    }
-    .welcome {
-      background: white;
-      padding: 25px 15px;
-      border-radius: 14px;
-    }
-    footer {
-      text-align: center;
-      padding: 20px;
-      color: #52675a;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyGelary | Photo Gallery</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f8fafc;font-family:Arial,sans-serif;color:#202124}
+header{position:sticky;top:0;background:white;padding:18px 5%;box-shadow:0 2px 10px #00000010;z-index:10}
+.logo{font-size:26px;font-weight:bold;color:#168451}
+.search{width:100%;margin-top:15px;padding:14px;border:1px solid #ddd;border-radius:30px;font-size:15px}
+.hero{text-align:center;padding:35px 15px}
+.hero h1{font-size:28px}
+.hero p{color:#666}
+.categories{display:flex;gap:10px;overflow-x:auto;padding:12px 5%}
+.categories button{background:white;border:0;padding:12px 20px;border-radius:25px;white-space:nowrap;cursor:pointer}
+.categories button.active{background:#168451;color:white}
+.gallery{padding:20px 5%;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px}
+.photo{background:white;border-radius:14px;overflow:hidden;box-shadow:0 3px 12px #00000010}
+.photo img{width:100%;height:190px;object-fit:cover;display:block}
+.info{padding:12px}
+.info h3{font-size:14px;margin:0 0 12px}
+.download{display:block;background:#168451;color:white;text-align:center;text-decoration:none;padding:10px;border-radius:8px;font-size:13px}
+footer{text-align:center;padding:30px;color:#777;font-size:13px}
+@media(min-width:768px){
+.gallery{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
+.photo img{height:240px}
+}
+</style>
 </head>
 <body>
-  <header>
-    <h1>MyGelary</h1>
-    <p>তোমার পছন্দের ছবির গ্যালারি</p>
-  </header>
-  <main>
-    <section class="welcome">
-      <h2>স্বাগতম MyGelary-তে!</h2>
-      <p>এখানে বিভিন্ন ধরনের ছবি দেখা ও ডাউনলোডের ব্যবস্থা থাকবে।</p>
-      <p>আমাদের গ্যালারি শিগগিরই আসছে।</p>
-    </section>
-  </main>
-  <footer>© MyGelary</footer>
+
+<header>
+<div class="logo">MyGelary</div>
+<input class="search" id="search" placeholder="ছবি খুঁজুন..." oninput="renderPhotos()">
+</header>
+
+<section class="hero">
+<h1>সুন্দর ছবির সংগ্রহ</h1>
+<p>আপনার পছন্দের ছবি খুঁজে নিন</p>
+</section>
+
+<div class="categories">
+<button class="active" onclick="setCategory('All',this)">All Photos</button>
+<button onclick="setCategory('Nature',this)">Nature</button>
+<button onclick="setCategory('Animals',this)">Animals</button>
+<button onclick="setCategory('Fashion',this)">Fashion</button>
+<button onclick="setCategory('People',this)">People</button>
+</div>
+
+<main class="gallery" id="gallery"></main>
+
+<footer>© 2026 MyGelary. All rights reserved.</footer>
+
+<script>
+const photos=[
+{title:"Green Nature",category:"Nature",id:"photo-1441974231531-c6227db76b6e"},
+{title:"Beautiful Mountains",category:"Nature",id:"photo-1464822759023-fed622ff2c3b"},
+{title:"Cute Animal",category:"Animals",id:"photo-1514888286974-6c03e2ca1dba"},
+{title:"Fashion Style",category:"Fashion",id:"photo-1483985988355-763728e1935b"},
+{title:"Portrait",category:"People",id:"photo-1534528741775-53994a69daeb"}
+];
+
+let category="All";
+
+function renderPhotos(){
+const search=document.getElementById("search").value.toLowerCase();
+const gallery=document.getElementById("gallery");
+gallery.innerHTML="";
+
+photos.filter(p=>
+(category==="All"||p.category===category)&&
+(p.title.toLowerCase().includes(search)||p.category.toLowerCase().includes(search))
+).forEach(p=>{
+const url="https://images.unsplash.com/"+p.id+"?auto=format&fit=crop&w=600&q=80";
+gallery.innerHTML+=`
+<div class="photo">
+<img src="${url}" alt="${p.title}" loading="lazy">
+<div class="info">
+<h3>${p.title}</h3>
+<a class="download" href="${url}" target="_blank" rel="noopener">View Photo</a>
+</div>
+</div>`;
+});
+}
+
+function setCategory(value,button){
+category=value;
+document.querySelectorAll(".categories button").forEach(b=>b.classList.remove("active"));
+button.classList.add("active");
+renderPhotos();
+}
+
+renderPhotos();
+</script>
 </body>
 </html>
