@@ -71,8 +71,7 @@ autocomplete="current-password" required>
 </div>
 
 <script type="module">
-
-import {initializeApp}
+import { initializeApp }
 from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
 import {
@@ -82,59 +81,64 @@ import {
 }
 from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-const firebaseConfig={
- apiKey:"AIzaSyBosbHSx4eTmruOh0AymBa-2Jd79h4IAl8",
- authDomain:"mygelary-58171.firebaseapp.com",
- projectId:"mygelary-58171",
- storageBucket:"mygelary-58171.firebasestorage.app",
- messagingSenderId:"747943092425",
- appId:"1:747943092425:web:eca37997c1b024fcd52d18"
+const firebaseConfig = {
+ apiKey: "AIzaSyBosbHSx4eTmruOh0AymBa-2Jd79h4IAl8",
+ authDomain: "mygelary-58171.firebaseapp.com",
+ projectId: "mygelary-58171",
+ storageBucket: "mygelary-58171.firebasestorage.app",
+ messagingSenderId: "747943092425",
+ appId: "1:747943092425:web:eca37997c1b024fcd52d18"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
+const ADMIN_UID = "Rw4DUvtOMkgJeZ4mnkZG3hc7dQ92";
 
-const form=document.getElementById("loginForm");
-const message=document.getElementById("message");
-const button=document.getElementById("loginBtn");
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-form.addEventListener("submit",async(e)=>{
+const form = document.getElementById("loginForm");
+const message = document.getElementById("message");
+const button = document.getElementById("loginBtn");
+
+form.addEventListener("submit", async (e) => {
  e.preventDefault();
 
- button.disabled=true;
- message.textContent="Login হচ্ছে...";
+ button.disabled = true;
+ message.style.color = "#333";
+ message.textContent = "Login হচ্ছে...";
 
- const email=document.getElementById("email").value.trim();
- const password=document.getElementById("password").value;
+ const email = document.getElementById("email").value.trim();
+ const password = document.getElementById("password").value;
 
- try{
-  await signInWithEmailAndPassword(auth,email,password);
-  message.style.color="green";
-  message.textContent="Firebase Login সফল হয়েছে!";
- }
- 
+ try {
+  const credential = await signInWithEmailAndPassword(
+   auth, email, password
+  );
 
+  if (credential.user.uid !== ADMIN_UID) {
+   await signOut(auth);
+   throw new Error("admin-only");
+  }
 
+  message.style.color = "green";
+  message.textContent = "Login সফল হয়েছে!";
 
-window.location.replace("dashboard.html");
+  window.location.replace("dashboard.html");
 
+ } catch (error) {
+  message.style.color = "red";
 
+  if (error.message === "admin-only") {
+   message.textContent = "এই Account-এর Admin অনুমতি নেই।";
+  } else {
+   message.textContent = "Login হয়নি: " + error.code;
+  }
 
-
-
-
-
-  
- 
- catch(error){
-  message.style.color="red";
-  message.textContent="Login হয়নি। Email, Password এবং Firebase Settings পরীক্ষা করো।";
- }finally{
-  document.getElementById("password").value="";
-  button.disabled=false;
+ } finally {
+  document.getElementById("password").value = "";
+  button.disabled = false;
  }
 });
-
 </script>
+
 </body>
-  </html>
+</html>
