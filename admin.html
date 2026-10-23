@@ -1,1 +1,125 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MyGelary - Admin Login</title>
 
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ min-height:100vh;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ background:#f3f6f9;
+ font-family:Arial,sans-serif;
+ padding:20px;
+}
+.login{
+ background:white;
+ padding:28px;
+ width:100%;
+ max-width:380px;
+ border-radius:16px;
+ box-shadow:0 5px 25px #00000012;
+}
+h2{text-align:center;color:#168451}
+input{
+ width:100%;
+ padding:13px;
+ margin:9px 0;
+ border:1px solid #ddd;
+ border-radius:9px;
+ font-size:15px;
+}
+button{
+ width:100%;
+ padding:13px;
+ margin-top:12px;
+ border:0;
+ border-radius:9px;
+ background:#168451;
+ color:white;
+ font-size:16px;
+ cursor:pointer;
+}
+button:disabled{opacity:.6}
+#message{text-align:center;font-size:14px}
+</style>
+</head>
+
+<body>
+
+<div class="login">
+<h2>MyGelary Admin</h2>
+
+<form id="loginForm">
+<input id="email" type="email"
+placeholder="Admin Email"
+autocomplete="username" required>
+
+<input id="password" type="password"
+placeholder="Password"
+autocomplete="current-password" required>
+
+<button id="loginBtn" type="submit">Login</button>
+</form>
+
+<p id="message" role="status"></p>
+</div>
+
+<script type="module">
+
+import {initializeApp}
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
+import {
+ getAuth,
+ signInWithEmailAndPassword,
+ signOut
+}
+from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyBosbHSx4eTmruOh0AymBa-2Jd79h4IAl8",
+ authDomain:"mygelary-58171.firebaseapp.com",
+ projectId:"mygelary-58171",
+ storageBucket:"mygelary-58171.firebasestorage.app",
+ messagingSenderId:"747943092425",
+ appId:"1:747943092425:web:eca37997c1b024fcd52d18"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+
+const form=document.getElementById("loginForm");
+const message=document.getElementById("message");
+const button=document.getElementById("loginBtn");
+
+form.addEventListener("submit",async(e)=>{
+ e.preventDefault();
+
+ button.disabled=true;
+ message.textContent="Login হচ্ছে...";
+
+ const email=document.getElementById("email").value.trim();
+ const password=document.getElementById("password").value;
+
+ try{
+  await signInWithEmailAndPassword(auth,email,password);
+  message.style.color="green";
+  message.textContent="Firebase Login সফল হয়েছে!";
+ }catch(error){
+  message.style.color="red";
+  message.textContent="Login হয়নি। Email, Password এবং Firebase Settings পরীক্ষা করো।";
+ }finally{
+  document.getElementById("password").value="";
+  button.disabled=false;
+ }
+});
+
+</script>
+</body>
+  </html>
