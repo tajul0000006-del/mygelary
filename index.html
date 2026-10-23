@@ -3,59 +3,191 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>MyGelary | Photo Gallery</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;background:#f8fafc;font-family:Arial,sans-serif;color:#202124}
-header{position:sticky;top:0;background:#fff;padding:8px 4%;box-shadow:0 2px 8px #00000010;z-index:10;display:flex;align-items:center;gap:15px}
-.logo{font-size:21px;font-weight:bold;color:#168451;white-space:nowrap}
-.search{flex:1;min-width:0;width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:25px;font-size:14px;outline:none}
-.hero{text-align:center;padding:35px 15px}
-.hero h1{font-size:28px}
-.hero p{color:#666}
-.categories{display:flex;gap:10px;overflow-x:auto;padding:12px 5%}
-.categories button{background:white;border:0;padding:12px 20px;border-radius:25px;white-space:nowrap;cursor:pointer}
-.categories button.active{background:#168451;color:white}
-.status{padding:5px 5%;color:#666;font-size:13px}
-.gallery{padding:20px 5%;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px}
-.photo{background:white;border-radius:14px;overflow:hidden;box-shadow:0 3px 12px #00000010}
-.photo img{width:100%;height:190px;object-fit:cover;display:block}
-.info{padding:12px}
-.info h3{font-size:14px;margin:0 0 12px;overflow-wrap:anywhere}
-.download{display:block;background:#168451;color:white;text-align:center;text-decoration:none;padding:10px;border-radius:8px;font-size:13px}
-footer{text-align:center;padding:30px;color:#777;font-size:13px}
+*{
+ box-sizing:border-box;
+}
+
+body{
+ margin:0;
+ background:#f8fafc;
+ font-family:Arial,sans-serif;
+ color:#202124;
+}
+
+header{
+ position:sticky;
+ top:0;
+ background:#fff;
+ padding:8px 4%;
+ box-shadow:0 2px 8px #00000010;
+ z-index:10;
+ display:flex;
+ align-items:center;
+ gap:15px;
+}
+
+.logo{
+ font-size:21px;
+ font-weight:bold;
+ color:#168451;
+ white-space:nowrap;
+}
+
+.search{
+ flex:1;
+ min-width:0;
+ width:100%;
+ padding:10px 14px;
+ border:1px solid #ddd;
+ border-radius:25px;
+ font-size:14px;
+ outline:none;
+}
+
+.categories{
+ display:flex;
+ gap:10px;
+ overflow-x:auto;
+ padding:12px 5%;
+}
+
+.categories button{
+ background:white;
+ border:0;
+ padding:12px 20px;
+ border-radius:25px;
+ white-space:nowrap;
+ cursor:pointer;
+}
+
+.categories button.active{
+ background:#168451;
+ color:white;
+}
+
+.status{
+ padding:5px 5%;
+ color:#666;
+ font-size:13px;
+}
+
+.gallery{
+ padding:20px 5%;
+ display:grid;
+ grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+ gap:15px;
+}
+
+.photo{
+ background:white;
+ border-radius:14px;
+ overflow:hidden;
+ box-shadow:0 3px 12px #00000010;
+}
+
+.photo img{
+ width:100%;
+ height:190px;
+ object-fit:cover;
+ display:block;
+}
+
+.info{
+ padding:12px;
+}
+
+.info h3{
+ font-size:14px;
+ margin:0 0 12px;
+ overflow-wrap:anywhere;
+}
+
+.download{
+ display:block;
+ background:#168451;
+ color:white;
+ text-align:center;
+ text-decoration:none;
+ padding:10px;
+ border-radius:8px;
+ font-size:13px;
+}
+
+.download:hover{
+ background:#10683e;
+}
+
+footer{
+ text-align:center;
+ padding:30px;
+ color:#777;
+ font-size:13px;
+}
+
 @media(min-width:768px){
-.gallery{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
-.photo img{height:240px}
+ .gallery{
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+ }
+
+ .photo img{
+  height:240px;
+ }
 }
 </style>
 </head>
+
 <body>
 
 <header>
-<div class="logo">MyGelary</div>
-<input class="search" id="search" type="search" placeholder="ছবি খুঁজুন...">
+ <div class="logo">MyGelary</div>
+
+ <input
+  class="search"
+  id="search"
+  type="search"
+  placeholder="ছবি খুঁজুন..."
+ >
 </header>
 
-
 <div class="categories">
-<button class="active" data-category="All">All Photos</button>
-<button data-category="Nature">Nature</button>
-<button data-category="Animals">Animals</button>
-<button data-category="Fashion">Fashion</button>
-<button data-category="People">People</button>
+ <button class="active" data-category="All">All Photos</button>
+ <button data-category="Nature">Nature</button>
+ <button data-category="Animals">Animals</button>
+ <button data-category="Fashion">Fashion</button>
+ <button data-category="People">People</button>
+ <button data-category="Others">Others</button>
 </div>
 
-<div class="status" id="status">Firebase থেকে ছবি লোড হচ্ছে...</div>
+<div class="status" id="status">
+ Firebase থেকে ছবি লোড হচ্ছে...
+</div>
+
 <main class="gallery" id="gallery"></main>
 
-<footer>© 2026 MyGelary. All rights reserved.</footer>
+<footer>
+ © 2026 MyGelary. All rights reserved.
+</footer>
 
 <script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
 import {
- getFirestore,collection,query,where,onSnapshot
+ initializeApp
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
+import {
+ getFirestore,
+ collection,
+ query,
+ where,
+ onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+
+/* Firebase Configuration */
 
 const firebaseConfig={
  apiKey:"AIzaSyBosbHSx4eTmruOh0AymBa-2Jd79h4IAl8",
@@ -69,6 +201,9 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const db=getFirestore(app);
 
+
+/* Variables */
+
 let photos=[];
 let category="All";
 
@@ -76,85 +211,181 @@ const gallery=document.getElementById("gallery");
 const status=document.getElementById("status");
 const searchInput=document.getElementById("search");
 
+
+/* Cloudinary Download URL */
+
+function getDownloadUrl(url){
+
+ if(typeof url!=="string"){
+  return "#";
+ }
+
+ if(
+  url.startsWith("https://res.cloudinary.com/") &&
+  url.includes("/image/upload/")
+ ){
+  return url.replace(
+   "/image/upload/",
+   "/image/upload/fl_attachment/"
+  );
+ }
+
+ return url;
+}
+
+
+/* Render Photos */
+
 function renderPhotos(){
+
  const search=searchInput.value.trim().toLowerCase();
 
  const filtered=photos.filter(p=>{
+
   const title=String(p.title||"").toLowerCase();
   const cat=String(p.category||"").toLowerCase();
-  return (category==="All"||p.category===category)
-   &&(title.includes(search)||cat.includes(search));
+
+  return (
+   (category==="All" || p.category===category) &&
+   (title.includes(search) || cat.includes(search))
+  );
+
  });
 
  gallery.replaceChildren();
 
- status.textContent=photos.length+"টি Published ছবি পাওয়া গেছে। দেখানো হচ্ছে: "+filtered.length+"টি।";
+ status.textContent=
+  photos.length+
+  "টি Published ছবি পাওয়া গেছে। দেখানো হচ্ছে: "+
+  filtered.length+
+  "টি।";
+
 
  if(!filtered.length){
+
   const empty=document.createElement("p");
-  empty.textContent="এই বিভাগে কোনো ছবি পাওয়া যায়নি।";
+
+  empty.textContent=
+   "এই বিভাগে কোনো ছবি পাওয়া যায়নি।";
+
   gallery.appendChild(empty);
+
   return;
  }
 
+
  filtered.forEach(p=>{
+
   const card=document.createElement("div");
   card.className="photo";
 
   const img=document.createElement("img");
+
   img.src=p.url;
   img.alt=p.title||"MyGelary Photo";
   img.loading="lazy";
 
+
   const info=document.createElement("div");
   info.className="info";
 
+
   const heading=document.createElement("h3");
-  heading.textContent=p.title||"Untitled Photo";
+
+  heading.textContent=
+   p.title||"Untitled Photo";
+
+
+  /* Download Button */
 
   const link=document.createElement("a");
+
   link.className="download";
-  link.href=p.url;
-  link.target="_blank";
+
+  link.href=getDownloadUrl(p.url);
+
+  link.textContent="⬇ Download Photo";
+
+  link.setAttribute("download","");
+
   link.rel="noopener";
-  link.textContent="View Photo";
+
 
   info.append(heading,link);
+
   card.append(img,info);
+
   gallery.appendChild(card);
+
  });
+
 }
 
-searchInput.addEventListener("input",renderPhotos);
+
+/* Instant Search */
+
+searchInput.addEventListener(
+ "input",
+ renderPhotos
+);
+
+
+/* Category Filter */
 
 document.querySelectorAll("[data-category]").forEach(button=>{
+
  button.addEventListener("click",()=>{
+
   category=button.dataset.category;
-  document.querySelectorAll("[data-category]").forEach(b=>b.classList.remove("active"));
+
+  document.querySelectorAll("[data-category]").forEach(b=>{
+   b.classList.remove("active");
+  });
+
   button.classList.add("active");
+
   renderPhotos();
+
  });
+
 });
+
+
+/* Firebase Live Photos */
 
 const photosQuery=query(
  collection(db,"photos"),
  where("published","==",true)
 );
 
-onSnapshot(photosQuery,snapshot=>{
- photos=snapshot.docs.map(doc=>({
-  id:doc.id,
-  ...doc.data()
- }));
+onSnapshot(
+ photosQuery,
 
- photos.sort((a,b)=>
-  (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)
- );
+ snapshot=>{
 
- renderPhotos();
-},error=>{
- status.textContent="Firebase Error: "+error.message;
-});
+  photos=snapshot.docs.map(doc=>({
+   id:doc.id,
+   ...doc.data()
+  }));
+
+  photos.sort((a,b)=>
+   (b.createdAt?.seconds||0)-
+   (a.createdAt?.seconds||0)
+  );
+
+  renderPhotos();
+
+ },
+
+ error=>{
+
+  status.textContent=
+   "Firebase Error: "+error.message;
+
+ }
+);
+
 </script>
+
 </body>
-</html>
+ </html>
