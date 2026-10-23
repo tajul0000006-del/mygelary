@@ -7,47 +7,21 @@
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f8fafc;font-family:Arial,sans-serif;color:#202124}
-
-  header{
- position:sticky;
- top:0;
- background:#fff;
- padding:8px 4%;
- box-shadow:0 2px 8px #00000010;
- z-index:10;
- display:flex;
- align-items:center;
- gap:15px;
-}
-.logo{
- font-size:21px;
- font-weight:bold;
- color:#168451;
- white-space:nowrap;
-}
-.search{
- flex:1;
- min-width:0;
- width:100%;
- margin:0;
- padding:10px 14px;
- border:1px solid #ddd;
- border-radius:25px;
- font-size:14px;
- outline:none;
-}
-  
-  .hero{text-align:center;padding:35px 15px}
+header{position:sticky;top:0;background:#fff;padding:8px 4%;box-shadow:0 2px 8px #00000010;z-index:10;display:flex;align-items:center;gap:15px}
+.logo{font-size:21px;font-weight:bold;color:#168451;white-space:nowrap}
+.search{flex:1;min-width:0;width:100%;padding:10px 14px;border:1px solid #ddd;border-radius:25px;font-size:14px;outline:none}
+.hero{text-align:center;padding:35px 15px}
 .hero h1{font-size:28px}
 .hero p{color:#666}
 .categories{display:flex;gap:10px;overflow-x:auto;padding:12px 5%}
 .categories button{background:white;border:0;padding:12px 20px;border-radius:25px;white-space:nowrap;cursor:pointer}
 .categories button.active{background:#168451;color:white}
+.status{padding:5px 5%;color:#666;font-size:13px}
 .gallery{padding:20px 5%;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px}
 .photo{background:white;border-radius:14px;overflow:hidden;box-shadow:0 3px 12px #00000010}
 .photo img{width:100%;height:190px;object-fit:cover;display:block}
 .info{padding:12px}
-.info h3{font-size:14px;margin:0 0 12px}
+.info h3{font-size:14px;margin:0 0 12px;overflow-wrap:anywhere}
 .download{display:block;background:#168451;color:white;text-align:center;text-decoration:none;padding:10px;border-radius:8px;font-size:13px}
 footer{text-align:center;padding:30px;color:#777;font-size:13px}
 @media(min-width:768px){
@@ -60,68 +34,127 @@ footer{text-align:center;padding:30px;color:#777;font-size:13px}
 
 <header>
 <div class="logo">MyGelary</div>
-<input class="search" id="search" type="search"
-placeholder="ছবি খুঁজুন..."
-oninput="renderPhotos()">
+<input class="search" id="search" type="search" placeholder="ছবি খুঁজুন...">
 </header>
 
-<section class="hero">
-<h1>সুন্দর ছবির সংগ্রহ</h1>
-<p>আপনার পছন্দের ছবি খুঁজে নিন</p>
-</section>
 
 <div class="categories">
-<button class="active" onclick="setCategory('All',this)">All Photos</button>
-<button onclick="setCategory('Nature',this)">Nature</button>
-<button onclick="setCategory('Animals',this)">Animals</button>
-<button onclick="setCategory('Fashion',this)">Fashion</button>
-<button onclick="setCategory('People',this)">People</button>
+<button class="active" data-category="All">All Photos</button>
+<button data-category="Nature">Nature</button>
+<button data-category="Animals">Animals</button>
+<button data-category="Fashion">Fashion</button>
+<button data-category="People">People</button>
 </div>
 
+<div class="status" id="status">Firebase থেকে ছবি লোড হচ্ছে...</div>
 <main class="gallery" id="gallery"></main>
 
 <footer>© 2026 MyGelary. All rights reserved.</footer>
 
-<script>
-const photos=[
-{title:"Green Nature",category:"Nature",id:"photo-1441974231531-c6227db76b6e"},
-{title:"Beautiful Mountains",category:"Nature",id:"photo-1464822759023-fed622ff2c3b"},
-{title:"Cute Animal",category:"Animals",id:"photo-1514888286974-6c03e2ca1dba"},
-{title:"Fashion Style",category:"Fashion",id:"photo-1483985988355-763728e1935b"},
-{title:"Portrait",category:"People",id:"photo-1534528741775-53994a69daeb"}
-];
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import {
+ getFirestore,collection,query,where,onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
+const firebaseConfig={
+ apiKey:"AIzaSyBosbHSx4eTmruOh0AymBa-2Jd79h4IAl8",
+ authDomain:"mygelary-58171.firebaseapp.com",
+ projectId:"mygelary-58171",
+ storageBucket:"mygelary-58171.firebasestorage.app",
+ messagingSenderId:"747943092425",
+ appId:"1:747943092425:web:eca37997c1b024fcd52d18"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+
+let photos=[];
 let category="All";
 
-function renderPhotos(){
-const search=document.getElementById("search").value.toLowerCase();
 const gallery=document.getElementById("gallery");
-gallery.innerHTML="";
+const status=document.getElementById("status");
+const searchInput=document.getElementById("search");
 
-photos.filter(p=>
-(category==="All"||p.category===category)&&
-(p.title.toLowerCase().includes(search)||p.category.toLowerCase().includes(search))
-).forEach(p=>{
-const url="https://images.unsplash.com/"+p.id+"?auto=format&fit=crop&w=600&q=80";
-gallery.innerHTML+=`
-<div class="photo">
-<img src="${url}" alt="${p.title}" loading="lazy">
-<div class="info">
-<h3>${p.title}</h3>
-<a class="download" href="${url}" target="_blank" rel="noopener">View Photo</a>
-</div>
-</div>`;
+function renderPhotos(){
+ const search=searchInput.value.trim().toLowerCase();
+
+ const filtered=photos.filter(p=>{
+  const title=String(p.title||"").toLowerCase();
+  const cat=String(p.category||"").toLowerCase();
+  return (category==="All"||p.category===category)
+   &&(title.includes(search)||cat.includes(search));
+ });
+
+ gallery.replaceChildren();
+
+ status.textContent=photos.length+"টি Published ছবি পাওয়া গেছে। দেখানো হচ্ছে: "+filtered.length+"টি।";
+
+ if(!filtered.length){
+  const empty=document.createElement("p");
+  empty.textContent="এই বিভাগে কোনো ছবি পাওয়া যায়নি।";
+  gallery.appendChild(empty);
+  return;
+ }
+
+ filtered.forEach(p=>{
+  const card=document.createElement("div");
+  card.className="photo";
+
+  const img=document.createElement("img");
+  img.src=p.url;
+  img.alt=p.title||"MyGelary Photo";
+  img.loading="lazy";
+
+  const info=document.createElement("div");
+  info.className="info";
+
+  const heading=document.createElement("h3");
+  heading.textContent=p.title||"Untitled Photo";
+
+  const link=document.createElement("a");
+  link.className="download";
+  link.href=p.url;
+  link.target="_blank";
+  link.rel="noopener";
+  link.textContent="View Photo";
+
+  info.append(heading,link);
+  card.append(img,info);
+  gallery.appendChild(card);
+ });
+}
+
+searchInput.addEventListener("input",renderPhotos);
+
+document.querySelectorAll("[data-category]").forEach(button=>{
+ button.addEventListener("click",()=>{
+  category=button.dataset.category;
+  document.querySelectorAll("[data-category]").forEach(b=>b.classList.remove("active"));
+  button.classList.add("active");
+  renderPhotos();
+ });
 });
-}
 
-function setCategory(value,button){
-category=value;
-document.querySelectorAll(".categories button").forEach(b=>b.classList.remove("active"));
-button.classList.add("active");
-renderPhotos();
-}
+const photosQuery=query(
+ collection(db,"photos"),
+ where("published","==",true)
+);
 
-renderPhotos();
+onSnapshot(photosQuery,snapshot=>{
+ photos=snapshot.docs.map(doc=>({
+  id:doc.id,
+  ...doc.data()
+ }));
+
+ photos.sort((a,b)=>
+  (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)
+ );
+
+ renderPhotos();
+},error=>{
+ status.textContent="Firebase Error: "+error.message;
+});
 </script>
 </body>
 </html>
