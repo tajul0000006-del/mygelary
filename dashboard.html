@@ -2,76 +2,78 @@
 <html lang="bn">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MyGelary | Photo Gallery</title>
-<meta name="description" content="MyGelary - সুন্দর ছবির সংগ্রহ। ছবি দেখুন, খুঁজুন ও ডাউনলোড করুন।">
-
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyGelary | Admin Dashboard</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#f8fafc;font-family:Arial,sans-serif;color:#202124}
-header{position:sticky;top:0;background:#fff;padding:9px 4%;box-shadow:0 2px 8px #00000010;z-index:10;display:flex;align-items:center;gap:12px}
-.logo{font-size:21px;font-weight:bold;color:#168451;white-space:nowrap}
-.search{flex:1;min-width:0;padding:11px 14px;border:1px solid #ddd;border-radius:25px;font-size:14px;outline:none}
-.search:focus{border-color:#168451}
-.hero{text-align:center;padding:35px 15px}
-.hero h1{font-size:28px;margin-bottom:10px}
-.hero p{color:#666}
-.categories{display:flex;gap:10px;overflow-x:auto;padding:12px 5%}
-.categories button{background:white;border:0;padding:12px 20px;border-radius:25px;white-space:nowrap;cursor:pointer}
-.categories button.active{background:#168451;color:white}
-.gallery{padding:20px 5%;display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:15px}
-.photo{background:white;border-radius:14px;overflow:hidden;box-shadow:0 3px 12px #00000010}
-.photo img{width:100%;height:190px;object-fit:cover;display:block;background:#eee}
-.info{padding:12px}
-.info h3{font-size:14px;margin:0 0 12px;overflow-wrap:anywhere}
-.download{display:block;background:#168451;color:white;text-align:center;text-decoration:none;padding:10px;border-radius:8px;font-size:13px}
-.download:hover{background:#106b40}
-#message{text-align:center;padding:25px 15px;color:#666}
-footer{text-align:center;padding:30px;color:#777;font-size:13px}
-
-@media(min-width:768px){
-.gallery{grid-template-columns:repeat(auto-fill,minmax(220px,1fr))}
-.photo img{height:240px}
-}
-@media(max-width:420px){
-.logo{font-size:18px}
-header{gap:9px}
-.search{font-size:13px}
-}
+body{margin:0;background:#f5f7fa;font-family:Arial,sans-serif;color:#222}
+header{background:#fff;padding:15px 5%;display:flex;align-items:center;justify-content:space-between;gap:12px;box-shadow:0 2px 8px #00000010}
+.logo{font-size:21px;font-weight:bold;color:#168451}
+button{background:#168451;color:white;border:0;padding:12px 17px;border-radius:8px;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+main{max-width:850px;margin:30px auto;padding:0 16px}
+.card{background:#fff;padding:24px;border-radius:15px;box-shadow:0 3px 15px #0000000d;margin-bottom:20px}
+h2{margin-top:0}
+label{display:block;margin:14px 0 7px}
+input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:15px}
+.note{color:#666;font-size:14px}
+#dashboard{display:none}
+#status{margin-top:15px;overflow-wrap:anywhere;line-height:1.6}
 </style>
 </head>
-
 <body>
 
-<header>
-<div class="logo">MyGelary</div>
-<input class="search" id="search" type="search"
-placeholder="ছবি খুঁজুন..." aria-label="ছবি খুঁজুন">
-</header>
-
-<section class="hero">
-<h1>সুন্দর ছবির সংগ্রহ</h1>
-<p>আপনার পছন্দের ছবি খুঁজে নিন ও ডাউনলোড করুন</p>
-</section>
-
-<div class="categories" id="categories">
-<button class="active" data-category="All">All Photos</button>
-<button data-category="Nature">Nature</button>
-<button data-category="Animals">Animals</button>
-<button data-category="Fashion">Fashion</button>
-<button data-category="People">People</button>
-<button data-category="Others">Others</button>
+<div id="loading" style="padding:30px;text-align:center">
+লগইন যাচাই হচ্ছে...
 </div>
 
-<p id="message" role="status">ছবি লোড হচ্ছে...</p>
-<main class="gallery" id="gallery"></main>
+<div id="dashboard">
+<header>
+<div class="logo">MyGelary Admin</div>
+<button id="logout" type="button">Logout</button>
+</header>
 
-<footer>© 2026 MyGelary. All rights reserved.</footer>
+<main>
+<section class="card">
+<h2>Welcome to MyGelary</h2>
+<p>এখান থেকে নতুন ছবি আপলোড করতে পারবে।</p>
+</section>
+
+<section class="card">
+<h2>নতুন ছবি যোগ করুন</h2>
+
+<label for="photoTitle">ছবির নাম</label>
+<input id="photoTitle" type="text" placeholder="ছবির নাম লিখো">
+
+<label for="category">Category</label>
+<select id="category">
+<option>Nature</option>
+<option>Animals</option>
+<option>Fashion</option>
+<option>People</option>
+<option>Others</option>
+</select>
+
+<label for="photoFile">ছবি নির্বাচন করো</label>
+<input id="photoFile" type="file"
+accept="image/jpeg,image/png,image/webp,image/gif">
+
+<p class="note">JPG, PNG, WEBP অথবা GIF; সর্বোচ্চ ৮ MB।</p>
+<button id="uploadBtn" type="button">Upload Photo</button>
+<p id="status" role="status"></p>
+</section>
+</main>
+</div>
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
 import {
- getFirestore,collection,query,where,onSnapshot
+ getAuth,onAuthStateChanged,signOut
+} from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+import {
+ getFirestore,collection,addDoc,serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const firebaseConfig={
@@ -83,129 +85,131 @@ const firebaseConfig={
  appId:"1:747943092425:web:eca37997c1b024fcd52d18"
 };
 
+const ADMIN_UID="Rw4DUvtOMkgJeZ4mnkZG3hc7dQ92";
+
+const WORKER_URL=
+"https://mygelary-upload.taijulsheikh60.workers.dev/";
+
 const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
 const db=getFirestore(app);
 
-const gallery=document.getElementById("gallery");
-const message=document.getElementById("message");
-const searchInput=document.getElementById("search");
+const loading=document.getElementById("loading");
+const dashboard=document.getElementById("dashboard");
+const statusBox=document.getElementById("status");
+const uploadBtn=document.getElementById("uploadBtn");
 
-let photos=[];
-let currentCategory="All";
-
-function getDownloadURL(url){
- try{
-  const parsed=new URL(url);
-  if(parsed.protocol!=="https:" ||
-     parsed.hostname!=="res.cloudinary.com" ||
-     !parsed.pathname.includes("/image/upload/")){
-   return url;
-  }
-  parsed.pathname=parsed.pathname.replace(
-   "/image/upload/",
-   "/image/upload/fl_attachment/"
-  );
-  return parsed.href;
- }catch(error){
-  return url;
- }
+function showStatus(text,color="#333"){
+ statusBox.style.color=color;
+ statusBox.textContent=text;
 }
 
-function renderPhotos(){
- const search=searchInput.value.trim().toLowerCase();
+onAuthStateChanged(auth,user=>{
+ loading.style.display="none";
 
- const filtered=photos.filter(photo=>{
-  const categoryMatch=
-   currentCategory==="All" ||
-   photo.category===currentCategory;
+ if(user && user.uid===ADMIN_UID){
+  dashboard.style.display="block";
+ }else{
+  dashboard.style.display="none";
+  window.location.replace("admin.html");
+ }
+});
 
-  const searchMatch=
-   String(photo.title||"").toLowerCase().includes(search) ||
-   String(photo.category||"").toLowerCase().includes(search);
+document.getElementById("logout").addEventListener("click",async()=>{
+ await signOut(auth);
+ window.location.replace("admin.html");
+});
 
-  return categoryMatch && searchMatch;
+function fileToDataURL(file){
+ return new Promise((resolve,reject)=>{
+  const reader=new FileReader();
+  reader.onload=()=>resolve(reader.result);
+  reader.onerror=()=>reject(new Error("ছবি পড়া যায়নি।"));
+  reader.readAsDataURL(file);
  });
+}
 
- gallery.replaceChildren();
+uploadBtn.addEventListener("click",async()=>{
+ if(uploadBtn.disabled)return;
 
- if(filtered.length===0){
-  message.style.display="block";
-  message.textContent="এই মুহূর্তে কোনো ছবি পাওয়া যায়নি।";
+ const user=auth.currentUser;
+ const file=document.getElementById("photoFile").files[0];
+ const title=document.getElementById("photoTitle").value.trim();
+ const category=document.getElementById("category").value;
+
+ if(!user || user.uid!==ADMIN_UID){
+  showStatus("Admin Login প্রয়োজন।","red");
   return;
  }
 
- message.style.display="none";
+ if(!file){
+  showStatus("আগে একটি ছবি নির্বাচন করো।","red");
+  return;
+ }
 
- filtered.forEach(photo=>{
-  if(!photo.url)return;
+ if(file.size>8*1024*1024){
+  showStatus("ছবির সাইজ সর্বোচ্চ ৮ MB হতে হবে।","red");
+  return;
+ }
 
-  const card=document.createElement("article");
-  card.className="photo";
+ if(!/^image\/(jpeg|png|webp|gif)$/.test(file.type)){
+  showStatus("JPG, PNG, WEBP অথবা GIF ছবি ব্যবহার করো।","red");
+  return;
+ }
 
-  const img=document.createElement("img");
-  img.src=photo.url;
-  img.alt=photo.title||"MyGelary Photo";
-  img.loading="lazy";
+ uploadBtn.disabled=true;
+ showStatus("ছবি আপলোড হচ্ছে... অপেক্ষা করো।");
 
-  const info=document.createElement("div");
-  info.className="info";
+ try{
+  const idToken=await user.getIdToken(true);
+  const imageBase64=await fileToDataURL(file);
 
-  const title=document.createElement("h3");
-  title.textContent=photo.title||"Untitled Photo";
-
-  const download=document.createElement("a");
-  download.className="download";
-  download.href=getDownloadURL(photo.url);
-  download.textContent="Download Photo";
-  download.target="_blank";
-  download.rel="noopener noreferrer";
-
-  info.append(title,download);
-  card.append(img,info);
-  gallery.appendChild(card);
- });
-}
-
-searchInput.addEventListener("input",renderPhotos);
-
-document.querySelectorAll("#categories button").forEach(button=>{
- button.addEventListener("click",()=>{
-  currentCategory=button.dataset.category;
-
-  document.querySelectorAll("#categories button").forEach(btn=>{
-   btn.classList.remove("active");
+  const uploadResponse=await fetch(WORKER_URL,{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({
+    idToken,
+    imageBase64,
+    filename:file.name
+   })
   });
 
-  button.classList.add("active");
-  renderPhotos();
- });
-});
+  const result=await uploadResponse.json();
 
-const photosQuery=query(
- collection(db,"photos"),
- where("published","==",true)
-);
+  if(!uploadResponse.ok || !result.success || !result.url){
+   throw new Error(
+    (result.error || "ছবি আপলোড ব্যর্থ হয়েছে।")+
+    (result.detail ? " — "+result.detail : "")
+   );
+  }
 
-onSnapshot(
- photosQuery,
- snapshot=>{
-  photos=snapshot.docs.map(doc=>({
-   id:doc.id,
-   ...doc.data()
-  }));
+  await addDoc(collection(db,"photos"),{
+   title:title || file.name,
+   category:category,
+   url:result.url,
+   publicId:result.publicId,
+   published:true,
+   createdAt:serverTimestamp()
+  });
 
-  photos.sort((a,b)=>
-   (b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)
+  showStatus(
+   "সফল! ছবি Upload হয়েছে এবং Firestore-এ Save হয়েছে।",
+   "green"
   );
 
-  renderPhotos();
- },
- error=>{
+  document.getElementById("photoFile").value="";
+  document.getElementById("photoTitle").value="";
+
+ }catch(error){
   console.error(error);
-  message.style.display="block";
-  message.textContent="ছবি লোড করা যাচ্ছে না: "+error.message;
+  showStatus(
+   "সমস্যা হয়েছে: "+(error.message || "আবার চেষ্টা করো।"),
+   "red"
+  );
+ }finally{
+  uploadBtn.disabled=false;
  }
-);
+});
 </script>
 </body>
 </html>
