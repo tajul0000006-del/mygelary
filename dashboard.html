@@ -9,20 +9,22 @@
 body{margin:0;background:#f5f7fa;font-family:Arial,sans-serif;color:#222}
 header{background:white;padding:15px 5%;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px #00000010}
 .logo{font-size:23px;font-weight:bold;color:#168451}
-button,.btn{background:#168451;color:white;border:0;padding:11px 17px;border-radius:8px;cursor:pointer}
-main{max-width:850px;margin:35px auto;padding:0 16px}
+button{background:#168451;color:white;border:0;padding:12px 17px;border-radius:8px;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}
+main{max-width:850px;margin:30px auto;padding:0 16px}
 .card{background:white;padding:24px;border-radius:15px;box-shadow:0 3px 15px #0000000d;margin-bottom:20px}
 h2{margin-top:0}
 label{display:block;margin:14px 0 7px}
 input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:15px}
 .note{color:#666;font-size:14px}
 #dashboard{display:none}
+#status{margin-top:15px;overflow-wrap:anywhere}
 </style>
 </head>
 <body>
 
 <div id="loading" style="padding:30px;text-align:center">
-Login যাচাই হচ্ছে...
+লগইন যাচাই হচ্ছে...
 </div>
 
 <div id="dashboard">
@@ -33,18 +35,18 @@ Login যাচাই হচ্ছে...
 
 <main>
 <section class="card">
-<h2>Welcome to Dashboard</h2>
-<p>তুমি সফলভাবে Admin Dashboard-এ প্রবেশ করেছ।</p>
+<h2>Welcome to MyGelary</h2>
+<p>এখান থেকে নতুন ছবি আপলোড করতে পারবে।</p>
 </section>
 
 <section class="card">
 <h2>নতুন ছবি যোগ করুন</h2>
 
-<label>Photo Title</label>
-<input type="text" placeholder="ছবির নাম">
+<label for="photoTitle">ছবির নাম</label>
+<input id="photoTitle" type="text" placeholder="ছবির নাম লিখো">
 
-<label>Category</label>
-<select>
+<label for="category">Category</label>
+<select id="category">
 <option>Nature</option>
 <option>Animals</option>
 <option>Fashion</option>
@@ -52,11 +54,13 @@ Login যাচাই হচ্ছে...
 <option>Others</option>
 </select>
 
-<label>Select Photo</label>
-<input type="file" accept="image/*" disabled>
+<label for="photoFile">ছবি নির্বাচন করো</label>
+<input id="photoFile" type="file"
+accept="image/jpeg,image/png,image/webp,image/gif">
 
-<p class="note">নিরাপদ Photo Upload System পরবর্তী ধাপে যুক্ত করা হবে।</p>
-<button disabled>Upload Photo (Coming Soon)</button>
+<p class="note">JPG, PNG, WEBP বা GIF ছবি; সর্বোচ্চ ৮ MB।</p>
+<button id="uploadBtn">Upload Photo</button>
+<p id="status" role="status"></p>
 </section>
 </main>
 </div>
@@ -65,39 +69,137 @@ Login যাচাই হচ্ছে...
 import {initializeApp} from
 "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 
-import {getAuth,onAuthStateChanged,signOut} from
+import {
+  getAuth, onAuthStateChanged, signOut
+} from
 "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
-const firebaseConfig={
-apiKey:"AIzaSyBosbHSx4eTmruOh0AymBa-2Jd79h4IAl8",
-authDomain:"mygelary-58171.firebaseapp.com",
-projectId:"mygelary-58171",
-storageBucket:"mygelary-58171.firebasestorage.app",
-messagingSenderId:"747943092425",
-appId:"1:747943092425:web:eca37997c1b024fcd52d18"
+import {
+  getFirestore, collection, addDoc, serverTimestamp
+} from
+"https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBosbHSx4eTmruOh0AymBa-2Jd79h4IAl8",
+  authDomain: "mygelary-58171.firebaseapp.com",
+  projectId: "mygelary-58171",
+  storageBucket: "mygelary-58171.firebasestorage.app",
+  messagingSenderId: "747943092425",
+  appId: "1:747943092425:web:eca37997c1b024fcd52d18"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
+const ADMIN_UID = "Rw4DUvtOMkgJeZ4mnkZG3hc7dQ92";
+const WORKER_URL =
+  "https://mygelary-upload.taijulsheikh60.workers.dev/";
 
-onAuthStateChanged(auth,user=>{
-document.getElementById("loading").style.display="none";
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
 
-  
-  const ADMIN_UID = "Rw4DUvtOMkgJeZ4mnkZG3hc7dQ92";
+const loading = document.getElementById("loading");
+const dashboard = document.getElementById("dashboard");
+const statusBox = document.getElementById("status");
+const uploadBtn = document.getElementById("uploadBtn");
 
-if (user && user.uid === ADMIN_UID) {
-  document.getElementById("dashboard").style.display = "block";
-} else {
+onAuthStateChanged(auth, user => {
+  loading.style.display = "none";
+
+  if (user && user.uid === ADMIN_UID) {
+    dashboard.style.display = "block";
+  } else {
+    dashboard.style.display = "none";
+    window.location.replace("admin.html");
+  }
+});
+
+document.getElementById("logout").addEventListener("click", async () => {
+  await signOut(auth);
   window.location.replace("admin.html");
+});
+
+function fileToDataURL(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error("ছবি পড়া যায়নি।"));
+    reader.readAsDataURL(file);
+  });
+}
+
+uploadBtn.addEventListener("click", async () => {
+  if (uploadBtn.disabled) return;
+
+  const user = auth.currentUser;
+  const file = document.getElementById("photoFile").files[0];
+  const title = document.getElementById("photoTitle").value.trim();
+  const category = document.getElementById("category").value;
+
+  if (!user || user.uid !== ADMIN_UID) {
+    statusBox.textContent = "Admin login প্রয়োজন।";
+    return;
   }
 
-  
+  if (!file) {
+    statusBox.textContent = "আগে একটি ছবি নির্বাচন করো।";
+    return;
+  }
 
-document.getElementById("logout").onclick=async()=>{
-await signOut(auth);
-window.location.replace("admin.html");
-};
+  if (file.size > 8 * 1024 * 1024) {
+    statusBox.textContent = "ছবির সাইজ ৮ MB-এর কম হতে হবে।";
+    return;
+  }
+
+  if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) {
+    statusBox.textContent = "JPG, PNG, WEBP অথবা GIF ছবি ব্যবহার করো।";
+    return;
+  }
+
+  uploadBtn.disabled = true;
+  statusBox.textContent = "ছবি আপলোড হচ্ছে... অপেক্ষা করো।";
+
+  try {
+    const idToken = await user.getIdToken();
+    const imageBase64 = await fileToDataURL(file);
+
+    const uploadResponse = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        idToken,
+        imageBase64,
+        filename: file.name
+      })
+    });
+
+    const result = await uploadResponse.json();
+
+    if (!uploadResponse.ok || !result.success || !result.url) {
+      throw new Error(result.error || "ছবি আপলোড ব্যর্থ হয়েছে।");
+    }
+
+    await addDoc(collection(db, "photos"), {
+      title: title || file.name,
+      category,
+      url: result.url,
+      publicId: result.publicId,
+      published: true,
+      createdAt: serverTimestamp()
+    });
+
+    statusBox.textContent =
+      "সফল! ছবি আপলোড হয়েছে এবং Firestore-এ সংরক্ষিত হয়েছে।";
+
+    document.getElementById("photoFile").value = "";
+    document.getElementById("photoTitle").value = "";
+
+  } catch (error) {
+    console.error(error);
+    statusBox.textContent =
+      "সমস্যা হয়েছে: " + (error.message || "আবার চেষ্টা করো।");
+  } finally {
+    uploadBtn.disabled = false;
+  }
+});
 </script>
 </body>
-  </html>
+</html>
