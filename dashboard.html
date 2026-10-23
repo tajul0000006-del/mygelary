@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MyGelary | Admin Dashboard</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7fa;font-family:Arial,sans-serif;color:#222}
+header{background:white;padding:15px 5%;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 8px #00000010}
+.logo{font-size:23px;font-weight:bold;color:#168451}
+button,.btn{background:#168451;color:white;border:0;padding:11px 17px;border-radius:8px;cursor:pointer}
+main{max-width:850px;margin:35px auto;padding:0 16px}
+.card{background:white;padding:24px;border-radius:15px;box-shadow:0 3px 15px #0000000d;margin-bottom:20px}
+h2{margin-top:0}
+label{display:block;margin:14px 0 7px}
+input,select{width:100%;padding:12px;border:1px solid #ddd;border-radius:8px;font-size:15px}
+.note{color:#666;font-size:14px}
+#dashboard{display:none}
+</style>
+</head>
+<body>
+
+<div id="loading" style="padding:30px;text-align:center">
+Login যাচাই হচ্ছে...
+</div>
+
+<div id="dashboard">
+<header>
+<div class="logo">MyGelary Admin</div>
+<button id="logout">Logout</button>
+</header>
+
+<main>
+<section class="card">
+<h2>Welcome to Dashboard</h2>
+<p>তুমি সফলভাবে Admin Dashboard-এ প্রবেশ করেছ।</p>
+</section>
+
+<section class="card">
+<h2>নতুন ছবি যোগ করুন</h2>
+
+<label>Photo Title</label>
+<input type="text" placeholder="ছবির নাম">
+
+<label>Category</label>
+<select>
+<option>Nature</option>
+<option>Animals</option>
+<option>Fashion</option>
+<option>People</option>
+<option>Others</option>
+</select>
+
+<label>Select Photo</label>
+<input type="file" accept="image/*" disabled>
+
+<p class="note">নিরাপদ Photo Upload System পরবর্তী ধাপে যুক্ত করা হবে।</p>
+<button disabled>Upload Photo (Coming Soon)</button>
+</section>
+</main>
+</div>
+
+<script type="module">
+import {initializeApp} from
+"https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+
+import {getAuth,onAuthStateChanged,signOut} from
+"https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+const firebaseConfig={
+apiKey:"AIzaSyBosbHSx4eTmruOh0AymBa-2Jd79h4IAl8",
+authDomain:"mygelary-58171.firebaseapp.com",
+projectId:"mygelary-58171",
+storageBucket:"mygelary-58171.firebasestorage.app",
+messagingSenderId:"747943092425",
+appId:"1:747943092425:web:eca37997c1b024fcd52d18"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+
+onAuthStateChanged(auth,user=>{
+document.getElementById("loading").style.display="none";
+if(user){
+document.getElementById("dashboard").style.display="block";
+}else{
+window.location.replace("admin.html");
+}
+});
+
+document.getElementById("logout").onclick=async()=>{
+await signOut(auth);
+window.location.replace("admin.html");
+};
+</script>
+</body>
+  </html>
