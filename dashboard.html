@@ -82,12 +82,17 @@ const auth=getAuth(app);
 
 onAuthStateChanged(auth,user=>{
 document.getElementById("loading").style.display="none";
-if(user){
-document.getElementById("dashboard").style.display="block";
-}else{
-window.location.replace("admin.html");
-}
-});
+
+  
+  const ADMIN_UID = "Rw4DUvtOMkgJeZ4mnkZG3hc7dQ92";
+
+if (user && user.uid === ADMIN_UID) {
+  document.getElementById("dashboard").style.display = "block";
+} else {
+  window.location.replace("admin.html");
+  }
+
+  
 
 document.getElementById("logout").onclick=async()=>{
 await signOut(auth);
