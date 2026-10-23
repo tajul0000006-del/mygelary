@@ -111,7 +111,22 @@ form.addEventListener("submit",async(e)=>{
   await signInWithEmailAndPassword(auth,email,password);
   message.style.color="green";
   message.textContent="Firebase Login সফল হয়েছে!";
- }catch(error){
+ }
+ 
+
+
+
+window.location.replace("dashboard.html");
+
+
+
+
+
+
+
+  
+ 
+ catch(error){
   message.style.color="red";
   message.textContent="Login হয়নি। Email, Password এবং Firebase Settings পরীক্ষা করো।";
  }finally{
